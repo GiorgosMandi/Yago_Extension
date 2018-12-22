@@ -21,14 +21,14 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
 public class Entity {
-	
+
 	private String id;
 	private Set<String> labels;
 	private Geometry geom;
 	private WKTReader wktReader;
-	
+
 	public Entity(String id,  List<String> labels, String wkt) throws ParseException {
-		this.wktReader = new WKTReader(); 
+		this.wktReader = new WKTReader();
 		this.id = id;
 		if(wkt.contains("<http://www.opengis.net/def/crs/EPSG/0/4326>")) {
 			this.geom = this.wktReader.read(wkt.replace("<http://www.opengis.net/def/crs/EPSG/0/4326>", ""));
@@ -52,26 +52,34 @@ public class Entity {
 		this.labels = new HashSet<String>();
 		for (String x : labels) this.labels.add(x);
 	}
-	
+
 	public Entity(String id, List<String> labels, String latitude, String longitude) throws ParseException {
 		this.wktReader = new WKTReader();
 		this.id = id;
+
+		if (latitude.charAt(latitude.length() - 1) == '.')
+			latitude = latitude.substring(0, latitude.length() - 1);
+		if (longitude.charAt(longitude.length() - 1) == '.')
+			longitude = longitude.substring(0, longitude.length() - 1);
+		latitude = latitude.replace("\"", "");
+		longitude = longitude.replace("\"", "");
+
 		this.geom = this.wktReader.read("POINT( "+longitude+" "+latitude+" )");
 		this.labels = new HashSet<String>();
 		for (String x : labels) this.labels.add(x);
 	}
-	
+
 	public Set<String> getLabels() {
 		return labels;
 	}
-	
+
 	public Geometry getGeometry() {
 		return geom;
 	}
-	
+
 	public String getID() {
 		return id;
 	}
-	
+
 
 }
