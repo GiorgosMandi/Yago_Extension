@@ -21,9 +21,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class App {
-	
+
 	private static String mode;
 	private static Reader yago;
 	private static Reader datasource;
@@ -33,18 +34,19 @@ public class App {
 	private static String outputUnmatched;
 	private static String matchesFile;
 	private static String origin;
+	private static Set<String> datefacts=null;
 	private static int threads = 1;
 	private static String preprocess = null;
 	private static String blacklist = null;
 	private static Reader extendedKG;
 	private static String outputTopology;
 	final static Logger logger = LogManager.getLogger(App.class);
-	
+
 	public static void main( String[] args ) {
-		
-		org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.OFF); // suppress Jena's log4j WARN messages 
+
+		org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.OFF); // suppress Jena's log4j WARN messages
 		parseArgs(args);
-		if(mode.equals("matching")) 
+		if(mode.equals("matching"))
 			match();
 		else if(mode.equals("generation"))
 			datasetGeneration();
@@ -52,9 +54,9 @@ public class App {
 			generateTopologicalRelations();
 
 	}
-	
+
 	private static void usage() {
-		
+
 		System.out.println("---Yago Extension---");
 		System.out.println("-----Arguments------");
 		System.out.println();
@@ -71,14 +73,15 @@ public class App {
 		System.out.println("\t--matched=<path_to_outputfile_matched>");
 		System.out.println("\t--unmatched=<path_to_outputfile_unmatched>");
 		System.out.println("\t--origin=<datasource> (e.g., GADM, OSM)");
+		System.out.println("\t--datefacts=<path to datefacts dataset> (e.g., GADM, OSM)");
 		System.out.println();
 		System.out.println("Example: yago_extension matching --yago=geoclass_first-order_administrative_division.ttl "
 				+ "--datasource=gadm_admLevel1.nt --output=1level_matches.ttl --threads=4");
 		System.exit(0);
 	}
-	
+
 	private static void parseArgs(String args[]) {
-		
+
 		if(args.length < 1)
 			usage();
 		mode = args[0];
@@ -108,11 +111,11 @@ public class App {
 						datasource = new TSVReader(value);
 					}
 					// TO-DO shapefiles
-					else 
+					else
 						usage();
 				}
 				/** output */
-				else if(args[i].contains("--output")) 
+				else if(args[i].contains("--output"))
 					outputMatches = value;
 				/** threads */
 				else if(args[i].contains("--threads"))
@@ -142,6 +145,16 @@ public class App {
 					data = value;
 				else if(args[i].contains("--origin"))
 					origin = value;
+				else if(args[i].contains("--datefacts")){
+					Reader datefacts_file=null;
+					if(value.contains(".ttl") || value.contains(".nt") || value.contains(".n3")){
+						datefacts_file = new RDFReader(value);
+					}
+					else if(value.contains(".tsv")) {
+						datefacts_file = new TSVReader(value);
+					}
+					datefacts = datefacts_file != null ? datefacts_file.readURIs() : null;
+				}
 				else
 					usage();
 			}
@@ -160,11 +173,11 @@ public class App {
 			usage();
 			System.exit(0);
 		}
-				
+
 	}
 
 	private static void match() {
-		
+
 		try {
 			System.setProperty("org.geotools.referencing.forceXY", "true"); // force (long lat) in geotools 
 			logger.info("Matching phase");
@@ -189,15 +202,15 @@ public class App {
 			logger.info("Number of Matches: "+geomMatches.size());
 			MatchesWriter matchesWriter = new MatchesWriter(outputMatches, geomMatches);
 			matchesWriter.write();
-			
+
 		} catch (InterruptedException | FileNotFoundException | UnsupportedEncodingException e) {
 			e.printStackTrace();
 			System.exit(2);
-		}		
+		}
 	}
-	
+
 	private static void datasetGeneration() {
-		
+
 		logger.info("Generating new Knowledge Graphs");
 		DatasetWriter ds = new DatasetWriter(outputMatched, outputUnmatched, matchesFile, data, origin);
 		try {
@@ -208,9 +221,9 @@ public class App {
 		}
 		logger.info("Generated new Knowledge Graphs");
 	}
-	
+
 	private static void generateTopologicalRelations() {
-		
+
 		logger.info("Generation of Topological Relations");
 		logger.info("Started reading data");
 		extendedKG.read();
@@ -225,5 +238,5 @@ public class App {
 		}
 		logger.info("Generated Topological Relations");
 	}
-	
+
 }
