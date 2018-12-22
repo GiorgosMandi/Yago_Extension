@@ -9,21 +9,23 @@ package gr.uoa.di.kr.yagoextension.readers;
 import java.util.Map;
 import gr.uoa.di.kr.yagoextension.structures.Entity;
 import java.util.HashMap;
+import java.util.Set;
 
 public abstract class Reader {
-	
+
 	protected String inputFile;
 	protected Map<String, Entity> entities;
-	
+
 	Reader(String path) {
 		inputFile = path;
 		entities = new HashMap<String, Entity>();
 	}
-		
+
 	public Map<String, Entity> getEntities() {
 		return entities;
 	}
 
 	abstract public void read();
-	
+	abstract public Set<String> readURIs();
+
 }

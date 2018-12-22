@@ -14,27 +14,24 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import com.vividsolutions.jts.io.ParseException;
 import gr.uoa.di.kr.yagoextension.structures.Entity;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+
+import java.util.*;
 
 
 public class TSVReader extends Reader {
-	
+
 	public TSVReader(String path) {
 		super(path);
 	}
 
 	public void read() {
-		
+
 		/** prepare data */
 		File tsvFile = new File(inputFile);
 		Map<String, List<String>> labelsMap = new HashMap<String, List<String>>();
 		Map<String, String> latiMap = new HashMap<String, String>();
 		Map<String, String> longiMap = new HashMap<String, String>();
-		
+
 		try {
 			CSVFormat csvFileFormat = CSVFormat.TDF.withQuote(null);
 			CSVParser parser = CSVParser.parse(tsvFile, StandardCharsets.UTF_8, csvFileFormat);
@@ -47,16 +44,16 @@ public class TSVReader extends Reader {
 						labelsMap.put(x.get(0), new ArrayList<String>(Arrays.asList(label)));
 				}
 				else if(x.get(1).contains("Latitude")){
-					latiMap.put(x.get(0), x.get(3));
+					latiMap.put(x.get(0), x.get(2)); // CHANGE: here was "3" instead of "2" and it was throwing IndexOutOfBounds
 				}
 				else if(x.get(1).contains("Longitude"))
-					longiMap.put(x.get(0), x.get(3));
+					longiMap.put(x.get(0), x.get(2)); // CHANGE: here was "3" instead of "2" and it was throwing IndexOutOfBounds
 			}
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		/** create new entities */
 		for(String key : latiMap.keySet()) {
 			if(labelsMap.get(key) == null) continue;
@@ -68,4 +65,22 @@ public class TSVReader extends Reader {
 		}
 	}
 
+	/** Returns all the URIs of dataset
+	 */
+	public Set<String> readURIs(){
+		File tsvFile = new File(inputFile);
+		Set<String> uris = new HashSet<String>();
+		try {
+			CSVFormat csvFileFormat = CSVFormat.TDF.withQuote(null);
+			CSVParser parser = CSVParser.parse(tsvFile, StandardCharsets.UTF_8, csvFileFormat);
+			for(CSVRecord x : parser) {
+				String uri = x.get(1);
+				uris.add(uri.substring(1, uri.length()-1));
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return uris;
+	}
 }
