@@ -18,30 +18,30 @@ import org.apache.logging.log4j.Logger;
  */
 
 public class StringSimilarity {
-	
+
 	final static Logger logger = LogManager.getLogger(StringSimilarity.class);
 	/** p factor of substring */
 	private static double p = 0.6;
 	/** P factor of winklerImpr */
 	private static double P = 0.1;
-	
+
 	public static double similarity(String label1, String label2, String method) {
-		
+
 		if(method.toLowerCase().equals("jarowinkler"))
 			return JaroWinkler(label1, label2);
 		else if(method.toLowerCase().equals("substring"))
 			return SubstringSimilarity(label1, label2);
 		else
 			return Levenshtein(label1, label2);
-		
+
 	}
-	
-	
+
+
 	private static double JaroWinkler(String label1, String label2) {
 		JaroWinklerDistance jr = new JaroWinklerDistance();
 		return jr.apply(label1, label2);
 	}
-	
+
 	private static double Levenshtein(String label1, String label2) {
 		LevenshteinDistance lv = new LevenshteinDistance();
 		int dist = lv.apply(label1, label2);
@@ -49,13 +49,13 @@ public class StringSimilarity {
 		int maxLen = Math.max(label1.length(), label2.length());
 		return 1-((double)dist/maxLen);
 	}
-	
+
 	/*
 	 * Proposed by Giorgos Stoilos, Giorgos Stamou, and Stefanos Kollias
 	 * A String Metric for Ontology Alignment
 	 */
 	private static double SubstringSimilarity(String str1, String str2) {
-		
+
 		/** sim(s1, s1) = comm(s1, s2) - diff(s1, s2) + winkler(s1, s2) */
 		String label1 = str1;
 		String label2 = str2;

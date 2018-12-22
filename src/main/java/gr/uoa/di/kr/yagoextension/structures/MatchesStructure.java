@@ -13,27 +13,27 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class MatchesStructure {
-	
+
 	protected Map<String, List<String>> matchesMap;
-	
+
 	public MatchesStructure() {
 		matchesMap = new HashMap<String, List<String>>();
 	}
-	
+
 	public abstract void addMatch(String key, String value, double d);
-	
+
 	public Set<String> getKeys() {
 		return matchesMap.keySet();
 	}
-	
+
 	public Iterator<String> getKeysIterator() {
 		return matchesMap.keySet().iterator();
 	}
-	
+
 	public List<String> getValueByKey(String key) {
 		return matchesMap.get(key);
 	}
-	
+
 	public int size(){
 		return matchesMap.size();
 	}

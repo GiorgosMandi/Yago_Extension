@@ -17,14 +17,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import me.tongfei.progressbar.ProgressBar;
 
-/** 
+/**
  *  Finds similar labels between Yago entities and the entities of the second data source.
  *  An entity of Yago can be matched with multiple entities for the second data source in this filter.
  *  Levenshtein distance is used in order to find similarity between labels. 
  */
 
 public class LabelSimilarity {
-	
+
 	private double threshold = 0.8;
 	private int nThreads;
 	private MatchesStructure matches;
@@ -34,7 +34,6 @@ public class LabelSimilarity {
 	private String preprocess;
 	private String strSimilarity;
 
-	
 	public LabelSimilarity(List<Entity> yago, List<Entity> ds, int threads, String origin, String method) {
 		this.yago = yago;
 		this.ds = ds;
@@ -45,7 +44,7 @@ public class LabelSimilarity {
 		/** pre-processing of labels for the official datasets */
 		preprocess = origin;
 	}
-	
+
 	public MatchesStructure run() throws InterruptedException {
 		/**
 		 * Initialize threads and split the list of yago entities in nThreads parts  
@@ -53,9 +52,9 @@ public class LabelSimilarity {
 		int yagoSize = yago.size();
 		ExecutorService exec = Executors.newFixedThreadPool(nThreads);
 		int minItemsPerThread = yagoSize / nThreads;
-    int maxItemsPerThread = minItemsPerThread + 1;
-    int threadsWithMaxItems = yagoSize - nThreads * minItemsPerThread;
-    int start = 0;
+		int maxItemsPerThread = minItemsPerThread + 1;
+		int threadsWithMaxItems = yagoSize - nThreads * minItemsPerThread;
+		int start = 0;
 		for(int i = 0; i < nThreads; i++) {
 			int itemsCount = (i < threadsWithMaxItems ? maxItemsPerThread : minItemsPerThread);
 			int end = start + itemsCount;
@@ -73,13 +72,12 @@ public class LabelSimilarity {
 		pb.close(); // terminate progress bar
 		return matches;
 	}
-	
 	private void filter(List<Entity> yagoPart) {
 		/**
 		 * Input: Sublist of yago list
 		 * Output: Matches produced by the label similarity filter
 		 */
-		double similarity; 
+		double similarity;
 		for(Entity yagoEnt : yagoPart) {
 			String yagoKey = yagoEnt.getID();
 			for(Entity dsEnt : ds) {
@@ -109,7 +107,6 @@ public class LabelSimilarity {
 			}
 		}
 	}
-	
 	private static double levenshteinRatio(int dist, int len) {
 		return 1-((double)dist/len);
 	}
