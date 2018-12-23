@@ -212,7 +212,11 @@ public class App {
 	private static void datasetGeneration() {
 
 		logger.info("Generating new Knowledge Graphs");
-		DatasetWriter ds = new DatasetWriter(outputMatched, outputUnmatched, matchesFile, data, origin);
+		DatasetWriter ds;
+		if (datefacts == null)
+			ds = new DatasetWriter(outputMatched, outputUnmatched, matchesFile, data, origin);
+		else
+			ds = new DatasetWriter(outputMatched, outputUnmatched, matchesFile, data, origin, datefacts);
 		try {
 			ds.write();
 		} catch (IOException e) {

@@ -10,6 +10,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.RDFDataMgr;
@@ -30,6 +32,8 @@ public class DatasetWriter {
 	private String source;
 	final static Logger logger = LogManager.getLogger(DatasetWriter.class);
 
+	private Set<String> datefacts = null;
+
 	public DatasetWriter(String pathMatched, String pathUnmatched, String matches, String data, String source) {
 		this.outputFileMatched = pathMatched;
 		this.outputFileUnmatched = pathUnmatched;
@@ -45,6 +49,17 @@ public class DatasetWriter {
 		this.data = data;
 		this.source = source;
 	}
+
+	public DatasetWriter(String pathMatched, String pathUnmatched, String matches, String data, String source, Set<String> date_facts) {
+		this.outputFileMatched = pathMatched;
+		this.outputFileUnmatched = pathUnmatched;
+		this.matchesFile = matches;
+		this.data = data;
+		this.source = source;
+
+		this.datefacts = date_facts;
+	}
+
 
 	public void write() throws IOException {
 		if(matches == null)
@@ -147,8 +162,6 @@ public class DatasetWriter {
 						continue;
 				}
 				else if(source.toLowerCase().equals("kapodistrias")) {
-					if(yagoEnt != null)
-						System.out.println(yagoEnt);
 					/** check if the predicate is part of the Kallikratis ontology */
 					if(predLN.equals("hasKapodistrias_ID") || predLN.equals("hasKapodistrias_UpperLevel")||
 							predLN.equals("hasKapodistrias_Geometry") || predLN.equals("hasKapodistrias_Type"))	{
@@ -156,6 +169,13 @@ public class DatasetWriter {
 						newObj = obj;
 					}
 					else if (predLN.equals("wasCreatedOnDate") || predLN.equals("wasDestroyedOnDate") ){
+						if(yagoEnt != null && datefacts != null){
+							String yago_uri = yagoEnt.toString().substring(yagoEnt.toString().lastIndexOf("/")+1, yagoEnt.toString().length());
+							if (datefacts.contains(yago_uri))
+								System.out.println("DATEFACT " + yago_uri);
+								continue;
+
+						}
 						newPred = ResourceFactory.createProperty(extensionYagoRNS, predLN);
 						newObj = obj;
 					}
