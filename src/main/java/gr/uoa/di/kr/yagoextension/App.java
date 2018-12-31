@@ -6,6 +6,7 @@ package gr.uoa.di.kr.yagoextension;
  * kr.di.uoa.gr
  */
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Set;
+
 
 public class App {
 
@@ -34,7 +35,7 @@ public class App {
 	private static String outputUnmatched;
 	private static String matchesFile;
 	private static String origin;
-	private static Set<String> datefacts=null;
+	private static Map<String, List<String>> datefacts=null;
 	private static int threads = 1;
 	private static String preprocess = null;
 	private static String blacklist = null;
@@ -153,7 +154,7 @@ public class App {
 					else if(value.contains(".tsv")) {
 						datefacts_file = new TSVReader(value);
 					}
-					datefacts = datefacts_file != null ? datefacts_file.readURIs() : null;
+					datefacts = datefacts_file != null ? datefacts_file.readFacts() : null;
 				}
 				else
 					usage();

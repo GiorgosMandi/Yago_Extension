@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.jena.graph.Triple;
@@ -32,7 +33,7 @@ public class DatasetWriter {
 	private String source;
 	final static Logger logger = LogManager.getLogger(DatasetWriter.class);
 
-	private Set<String> datefacts = null;
+	private Map<String, List<String>> datefacts = null;
 
 	public DatasetWriter(String pathMatched, String pathUnmatched, String matches, String data, String source) {
 		this.outputFileMatched = pathMatched;
@@ -50,7 +51,7 @@ public class DatasetWriter {
 		this.source = source;
 	}
 
-	public DatasetWriter(String pathMatched, String pathUnmatched, String matches, String data, String source, Set<String> date_facts) {
+	public DatasetWriter(String pathMatched, String pathUnmatched, String matches, String data, String source, Map<String, List<String>> date_facts) {
 		this.outputFileMatched = pathMatched;
 		this.outputFileUnmatched = pathUnmatched;
 		this.matchesFile = matches;
@@ -162,19 +163,28 @@ public class DatasetWriter {
 						continue;
 				}
 				else if(source.toLowerCase().equals("kapodistrias")) {
-					/** check if the predicate is part of the Kallikratis ontology */
+					/** check if the predicate is part of the Kapodistrias ontology */
 					if(predLN.equals("hasKapodistrias_ID") || predLN.equals("hasKapodistrias_UpperLevel")||
 							predLN.equals("hasKapodistrias_Geometry") || predLN.equals("hasKapodistrias_Type"))	{
 						newPred = ResourceFactory.createProperty(extensionONS, predLN);
 						newObj = obj;
 					}
-					else if (predLN.equals("wasCreatedOnDate") || predLN.equals("wasDestroyedOnDate") ){
+					else if (predLN.equals("wasCreatedOnDate")){
 						if(yagoEnt != null && datefacts != null){
 							String yago_uri = yagoEnt.toString().substring(yagoEnt.toString().lastIndexOf("/")+1, yagoEnt.toString().length());
-							if (datefacts.contains(yago_uri))
-								System.out.println("DATEFACT " + yago_uri);
-								continue;
-
+							if (datefacts.containsKey(yago_uri) )
+								if(datefacts.get(yago_uri).contains("wasCreatedOnDate"))
+									continue;
+						}
+						newPred = ResourceFactory.createProperty(extensionYagoRNS, predLN);
+						newObj = obj;
+					}
+					else if (predLN.equals("wasDestroyedOnDate")){
+						if(yagoEnt != null && datefacts != null){
+							String yago_uri = yagoEnt.toString().substring(yagoEnt.toString().lastIndexOf("/")+1, yagoEnt.toString().length());
+							if (datefacts.containsKey(yago_uri) )
+								if(datefacts.get(yago_uri).contains("wasDestroyedOnDate"))
+									continue;
 						}
 						newPred = ResourceFactory.createProperty(extensionYagoRNS, predLN);
 						newObj = obj;
