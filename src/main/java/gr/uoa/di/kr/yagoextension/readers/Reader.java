@@ -6,10 +6,11 @@ package gr.uoa.di.kr.yagoextension.readers;
  * kr.di.uoa.gr
  */
 
+import java.util.List;
 import java.util.Map;
+
 import gr.uoa.di.kr.yagoextension.structures.Entity;
 import java.util.HashMap;
-import java.util.Set;
 
 public abstract class Reader {
 
@@ -26,6 +27,6 @@ public abstract class Reader {
 	}
 
 	abstract public void read();
-	abstract public Set<String> readURIs();
+	abstract public Map<String, List<String>> readFacts();
 
 }

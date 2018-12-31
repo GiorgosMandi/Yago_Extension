@@ -65,22 +65,34 @@ public class TSVReader extends Reader {
 		}
 	}
 
-	/** Returns all the URIs of dataset
+	/** Returns a map with all the URIs and their properties
 	 */
-	public Set<String> readURIs(){
+	public Map<String, List<String>> readFacts(){
 		File tsvFile = new File(inputFile);
-		Set<String> uris = new HashSet<String>();
+		Map<String, List<String>> facts = new HashMap<>();
 		try {
 			CSVFormat csvFileFormat = CSVFormat.TDF.withQuote(null);
 			CSVParser parser = CSVParser.parse(tsvFile, StandardCharsets.UTF_8, csvFileFormat);
 			for(CSVRecord x : parser) {
 				String uri = x.get(1);
-				uris.add(uri.substring(1, uri.length()-1));
+				String property = x.get(2);
+				if(uri.charAt(0) == '<' && uri.charAt(uri.length()-1) == '>')
+					uri = uri.substring(1, uri.length()-1);
+				if(property.charAt(0) == '<' && property.charAt(property.length()-1) == '>')
+					property = property.substring(1, property.length()-1);
+				if (facts.containsKey(uri)){
+					facts.get(uri).add(property);
+					System.out.println(uri+"  "+ property+"\n\n\n\n");
+				}
+				else{
+					List<String> properties = new ArrayList<>();
+					properties.add(property);
+					facts.put(uri, properties);
+				}
 			}
-
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return uris;
+		return null;
 	}
 }

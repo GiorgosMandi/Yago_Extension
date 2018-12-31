@@ -1,7 +1,10 @@
 package gr.uoa.di.kr.yagoextension.readers;
 
+
+import java.util.List;
 import java.io.File;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -23,11 +26,9 @@ public class SHPReader extends Reader {
 	}
 
 	@Override
-	public Set<String> readURIs(){
-		File tsvFile = new File(inputFile);
-		Set<String> uris = new HashSet<String>();
-		// TODO Auto-generated method stub
-		return uris;
+	public Map<String, List<String>> readFacts(){
+
+		return null;
 	}
 
 }

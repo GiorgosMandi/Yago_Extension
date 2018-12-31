@@ -6,6 +6,7 @@ package gr.uoa.di.kr.yagoextension.readers;
  * kr.di.uoa.gr
  */
 
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResIterator;
@@ -13,9 +14,8 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.RDFDataMgr;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+
+import java.util.*;
 
 import com.vividsolutions.jts.io.ParseException;
 import gr.uoa.di.kr.yagoextension.structures.Entity;
@@ -80,14 +80,20 @@ public class RDFReader extends Reader {
 	}
 
 
-	/** Returns all the URIs of dataset
+	/** Returns a map with all the URIs and their properties
 	 */
-	public Set<String> readURIs(){
-		Set<String> uris = new HashSet<String>();
+	public Map<String, List<String>> readFacts(){
+		Map<String, List<String>> facts = new HashMap<>();
 		Model model = RDFDataMgr.loadModel(inputFile);
 		ResIterator subjects = model.listSubjects();
-		while(subjects.hasNext())
-			uris.add(subjects.next().toString());
-		return uris;
+		List<String> properties = new ArrayList<String>();
+		while(subjects.hasNext()) {
+			Resource subject = subjects.next();
+			StmtIterator properties_iter = subject.listProperties();
+			while(properties_iter.hasNext())
+				properties.add(properties_iter.next().getPredicate().toString());
+			facts.put(subject.toString(), properties);
+		}
+		return facts;
 	}
 }
