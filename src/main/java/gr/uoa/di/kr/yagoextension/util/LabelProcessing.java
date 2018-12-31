@@ -26,8 +26,8 @@ public class LabelProcessing {
 
         if(label.contains("ΔΗΜΟΣ "))
             label = label.replace("ΔΗΜΟΣ ", "");
-        if(label.contains("ΝΟΜΟΣ "))
-            label = label.replace("ΝΟΜΟΣ ", "");
+        //else if(label.contains("ΝΟΜΟΣ "))
+        //    label = label.replace("ΝΟΜΟΣ ", "");
         if(label.contains("ΝΟΜΑΡΧΙΑ "))
             label = label.replace("ΝΟΜΑΡΧΙΑ ", "");
         else if(label.contains("ΔHMOTIKH ΕNOTHTA "))
