@@ -10,29 +10,26 @@ public class LabelProcessing {
 
     public static String processDataSourceLabel(String label, String source) {
 
-        if(source.equals("kallikratis") || source.equals("kapodistrias"))
+        if (source.equals("kallikratis"))
             return processKallikratisLabel(label);
-        else if(source.equals("os"))
+        else if (source.equals("kapodistrias"))
+            return processKapodistriasLabel(label);
+        else if (source.equals("os"))
             return processOSLabel(label);
-        else if(source.equals("osi"))
+        else if (source.equals("osi"))
             return processOSILabel(label);
 
         return label;
     }
 
     private static String processKallikratisLabel(String label) {
-
-        label = processYagoLabel(label);
-
-        if(label.contains("ΔΗΜΟΣ "))
+        if (label.contains("ΔΗΜΟΣ "))
             label = label.replace("ΔΗΜΟΣ ", "");
-        //else if(label.contains("ΝΟΜΟΣ "))
-        //    label = label.replace("ΝΟΜΟΣ ", "");
-        if(label.contains("ΝΟΜΑΡΧΙΑ "))
+        if (label.contains("ΝΟΜΑΡΧΙΑ "))
             label = label.replace("ΝΟΜΑΡΧΙΑ ", "");
-        else if(label.contains("ΔHMOTIKH ΕNOTHTA "))
+        else if (label.contains("ΔHMOTIKH ΕNOTHTA "))
             label = label.replace("ΔHMOTIKH ΕNOTHTA ", "");
-        else if(label.contains("ΠΕΡΙΦΕΡΕΙΑ "))
+        else if (label.contains("ΠΕΡΙΦΕΡΕΙΑ "))
             label = label.replace("ΠΕΡΙΦΕΡΕΙΑ ", "");
 
         return label;
@@ -40,27 +37,27 @@ public class LabelProcessing {
 
     public static String processOSLabel(String label) {
 
-        if(label.contains("District"))
+        if (label.contains("District"))
             label = label.replace("District", "");
-        if(label.contains("County"))
+        if (label.contains("County"))
             label = label.replace(" County", "");
-        if(label.contains("(B)"))
+        if (label.contains("(B)"))
             label = label.replace("(B)", "");
-        if(label.contains("CP"))
+        if (label.contains("CP"))
             label = label.replace("CP", "");
-        if(label.contains("District"))
+        if (label.contains("District"))
             label = label.replace("District", "");
-        if(label.contains("City of"))
+        if (label.contains("City of"))
             label = label.replace("City of", "");
-        if(label.contains("Community"))
+        if (label.contains("Community"))
             label = label.replace("Community", "");
-        if(label.contains("London Boro"))
+        if (label.contains("London Boro"))
             label = label.replace("London Boro", "");
-        if(label.contains("Central Ward"))
+        if (label.contains("Central Ward"))
             label = label.replace("Central Ward", "");
-        else if(label.contains("Ward"))
+        else if (label.contains("Ward"))
             label = label.replace("Ward", "");
-        if(label.contains(" - "))
+        if (label.contains(" - "))
             label = label.split(" - ")[1];
 
         return label.toUpperCase().trim();
@@ -68,19 +65,19 @@ public class LabelProcessing {
 
     private static String processOSILabel(String label) {
 
-        if(label.contains("MUNICIPAL DISTRICT OF "))
+        if (label.contains("MUNICIPAL DISTRICT OF "))
             label = label.replace("MUNICIPAL DISTRICT OF ", "");
-        if(label.contains(" RURAL AREA"))
+        if (label.contains(" RURAL AREA"))
             label = label.replace(" RURAL AREA", "");
-        if(label.contains(" COUNTY COUNCIL"))
+        if (label.contains(" COUNTY COUNCIL"))
             label = label.replace(" COUNTY COUNCIL", "");
-        if(label.contains(" COUNTY"))
+        if (label.contains(" COUNTY"))
             label = label.replace(" COUNTY", "");
-        if(label.contains(" COUNCIL"))
+        if (label.contains(" COUNCIL"))
             label = label.replace(" COUNCIL", "");
-        if(label.contains(" \\(ED"))
+        if (label.contains(" \\(ED"))
             label = label.split(" \\(ED")[0];
-        if(label.equals("\n"))
+        if (label.equals("\n"))
             label = label.split("\n")[0];
 
         return label.toUpperCase().trim();
@@ -110,4 +107,19 @@ public class LabelProcessing {
         return label.toUpperCase();
     }
 
+    private static String processKapodistriasLabel(String label) {
+
+        label = processYagoLabel(label);
+
+        if (label.contains("ΔΗΜΟΣ "))
+            label = label.replace("ΔΗΜΟΣ ", "");
+        else if (label.contains("ΝΟΜΟΣ "))
+            label = label.replace("ΝΟΜΟΣ ", "");
+        if (label.contains("ΝΟΜΑΡΧΙΑ "))
+            label = label.replace("ΝΟΜΑΡΧΙΑ ", "");
+        else if (label.contains("ΠΕΡΙΦΕΡΕΙΑ "))
+            label = label.replace("ΠΕΡΙΦΕΡΕΙΑ ", "");
+
+        return label;
+    }
 }
