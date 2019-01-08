@@ -6,6 +6,7 @@ package gr.uoa.di.kr.yagoextension.writers;
  * kr.di.uoa.gr
  */
 
+import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -138,7 +139,7 @@ public class DatasetWriter {
 									asWKT.asNode(), wkt.asNode()));
 						else
 							triplesMatched.add(new Triple(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()).asNode(),
-									asWKT.asNode(), wkt.asNode()));
+									asWKT.asNode(), wkt.asNode())); //WARNING shouldn't the list be triplesUnmatched ?
 					}
 					else
 						continue;
@@ -193,7 +194,7 @@ public class DatasetWriter {
 						newPred = ResourceFactory.createProperty("http://www.w3.org/2000/01/rdf-schema#", predLN);
 						newObj = obj;
 					}
-					else if(predLN.equals("asWKT")) {
+					/*else if(predLN.equals("asWKT")) {
 						newPred = hasGeo;
 						RDFNode geom = ResourceFactory.createResource(extensionRNS + localName);
 						newObj = geom;
@@ -201,6 +202,17 @@ public class DatasetWriter {
 							triplesMatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
 						else
 							triplesUnmatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
+					}*/
+					else if(predLN.equals("hasGeometry")) {
+						newPred = pred;
+						newObj = ResourceFactory.createResource(extensionRNS+obj.asResource());
+						RDFNode wkt = modelData.listObjectsOfProperty(obj.asResource(), null).next();
+						if(yagoEnt != null)
+							triplesMatched.add(new Triple(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()).asNode(),
+									asWKT.asNode(), wkt.asNode()));
+						else
+							triplesUnmatched.add(new Triple(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()).asNode(),
+									asWKT.asNode(), wkt.asNode()));
 					}
 					else
 						continue;
