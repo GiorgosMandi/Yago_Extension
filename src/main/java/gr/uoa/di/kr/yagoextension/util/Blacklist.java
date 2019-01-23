@@ -6,6 +6,7 @@ package gr.uoa.di.kr.yagoextension.util;
  * kr.di.uoa.gr
  */
 
+import java.util.Iterator;
 import java.util.Map;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Statement;
@@ -28,4 +29,15 @@ public class Blacklist {
 			ds.remove(subj);
 		}
 	}
+
+	public static void removeMergedEntities(Map<String, Entity> yago){
+		Iterator it = yago.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry)it.next();
+			String key = pair.getKey().toString();
+			if (key.contains("-"))
+				it.remove();
+		}
+	}
+
 }
