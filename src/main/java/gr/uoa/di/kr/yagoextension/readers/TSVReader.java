@@ -93,6 +93,24 @@ public class TSVReader extends Reader {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return facts;
+	}
+
+	public Map<String, String> readUpperLevels(){
+		Map<String, String> upperLevel = new HashMap<>();
+		File tsvFile = new File(inputFile);
+		try {
+			CSVFormat csvFileFormat = CSVFormat.TDF.withQuote(null);
+			CSVParser parser = CSVParser.parse(tsvFile, StandardCharsets.UTF_8, csvFileFormat);
+			for (CSVRecord x : parser) {
+				String key = x.get(0);
+				String value = x.get(1);
+				upperLevel.put(key, value);
+			}
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return upperLevel;
 	}
 }

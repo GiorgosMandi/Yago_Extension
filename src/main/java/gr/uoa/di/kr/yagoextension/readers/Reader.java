@@ -28,5 +28,5 @@ public abstract class Reader {
 
 	abstract public void read();
 	abstract public Map<String, List<String>> readFacts();
-
+	abstract public Map<String, String> readUpperLevels();
 }

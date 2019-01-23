@@ -86,14 +86,27 @@ public class RDFReader extends Reader {
 		Map<String, List<String>> facts = new HashMap<>();
 		Model model = RDFDataMgr.loadModel(inputFile);
 		ResIterator subjects = model.listSubjects();
-		List<String> properties = new ArrayList<String>();
 		while(subjects.hasNext()) {
 			Resource subject = subjects.next();
 			StmtIterator properties_iter = subject.listProperties();
+			List<String> properties = new ArrayList<String>();
 			while(properties_iter.hasNext())
 				properties.add(properties_iter.next().getPredicate().toString());
 			facts.put(subject.toString(), properties);
 		}
 		return facts;
+	}
+
+	public Map<String, String> readUpperLevels(){
+		Map<String, String> upperLevel = new HashMap<>();
+		Model model = RDFDataMgr.loadModel(inputFile);
+		StmtIterator stmnts = model.listStatements();
+		while(stmnts.hasNext()){
+			Statement stmnt = stmnts.next();
+			String key = stmnt.getSubject().toString();
+			String value = stmnt.getObject().toString();
+			upperLevel.put(key, value);
+		}
+		return upperLevel;
 	}
 }

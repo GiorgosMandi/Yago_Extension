@@ -2,10 +2,7 @@ package gr.uoa.di.kr.yagoextension.readers;
 
 
 import java.util.List;
-import java.io.File;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * This class is part of the YAGO Extension Project
@@ -28,6 +25,11 @@ public class SHPReader extends Reader {
 	@Override
 	public Map<String, List<String>> readFacts(){
 
+		return null;
+	}
+
+	@Override
+	public Map<String, String> readUpperLevels(){
 		return null;
 	}
 
