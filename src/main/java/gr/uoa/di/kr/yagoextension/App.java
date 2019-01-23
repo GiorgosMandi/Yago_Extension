@@ -36,6 +36,7 @@ public class App {
 	private static String matchesFile;
 	private static String origin;
 	private static Map<String, List<String>> datefacts=null;
+	private static Map<String, String> upperLevels=null;
 	private static int threads = 1;
 	private static String preprocess = null;
 	private static String blacklist = null;
@@ -74,7 +75,8 @@ public class App {
 		System.out.println("\t--matched=<path_to_outputfile_matched>");
 		System.out.println("\t--unmatched=<path_to_outputfile_unmatched>");
 		System.out.println("\t--origin=<datasource> (e.g., GADM, OSM)");
-		System.out.println("\t--datefacts=<path to datefacts dataset> (e.g., GADM, OSM)");
+		System.out.println("\t--datefacts=<path to datefacts dataset> (OPTIONAL)");
+		System.out.println("\t--upperlevel=<the results of the matching process of the upper order> (OPTIONAL)");
 		System.out.println();
 		System.out.println("Example: yago_extension matching --yago=geoclass_first-order_administrative_division.ttl "
 				+ "--datasource=gadm_admLevel1.nt --output=1level_matches.ttl --threads=4");
@@ -156,6 +158,15 @@ public class App {
 					}
 					datefacts = datefacts_file != null ? datefacts_file.readFacts() : null;
 				}
+				else if(args[i].contains("--upperlevel")) {
+					Reader upperLevels_file = null;
+					if (value.contains(".ttl") || value.contains(".nt") || value.contains(".n3")) {
+						upperLevels_file = new RDFReader(value);
+					} else if (value.contains(".tsv")) {
+						upperLevels_file = new TSVReader(value);
+					}
+					upperLevels = upperLevels_file != null ? upperLevels_file.readUpperLevels() : null;
+				}
 				else
 					usage();
 			}
@@ -193,6 +204,8 @@ public class App {
 				Blacklist.removeMatchedEntities(yagoEntities, dsEntities, blacklist);
 			logger.info("Number of Yago Entities: "+yagoEntities.size());
 			logger.info("Number of Datasource Entities: "+dsEntities.size());
+			if(preprocess.equals("kapodistrias"))
+				Blacklist.removeMergedEntities(yagoEntities);
 			LabelSimilarity ls = new LabelSimilarity(
 					new ArrayList<Entity>(yagoEntities.values()), new ArrayList<Entity>(dsEntities.values()), threads, preprocess, "jarowinkler");
 			MatchesStructure labelMatches = ls.run();
@@ -214,10 +227,12 @@ public class App {
 
 		logger.info("Generating new Knowledge Graphs");
 		DatasetWriter ds;
-		if (datefacts == null)
-			ds = new DatasetWriter(outputMatched, outputUnmatched, matchesFile, data, origin);
-		else
-			ds = new DatasetWriter(outputMatched, outputUnmatched, matchesFile, data, origin, datefacts);
+		ds = new DatasetWriter(outputMatched, outputUnmatched, matchesFile, data, origin);
+		if (datefacts != null)
+			ds.setDatefacts(datefacts);
+		if(upperLevels != null)
+			ds.setUpperLevels(upperLevels);
+
 		try {
 			ds.write();
 		} catch (IOException e) {

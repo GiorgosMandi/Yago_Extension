@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.*;
@@ -22,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 import gr.uoa.di.kr.yagoextension.structures.MatchesStructure;
 
-import javax.swing.plaf.nimbus.State;
+
 
 public class DatasetWriter {
 
@@ -35,6 +34,7 @@ public class DatasetWriter {
 	final static Logger logger = LogManager.getLogger(DatasetWriter.class);
 
 	private Map<String, List<String>> datefacts = null;
+    private Map<String, String> upperLevels = null;
 
 	public DatasetWriter(String pathMatched, String pathUnmatched, String matches, String data, String source) {
 		this.outputFileMatched = pathMatched;
@@ -52,16 +52,13 @@ public class DatasetWriter {
 		this.source = source;
 	}
 
-	public DatasetWriter(String pathMatched, String pathUnmatched, String matches, String data, String source, Map<String, List<String>> date_facts) {
-		this.outputFileMatched = pathMatched;
-		this.outputFileUnmatched = pathUnmatched;
-		this.matchesFile = matches;
-		this.data = data;
-		this.source = source;
+	public void setDatefacts( Map<String, List<String>> date_facts){
+        this.datefacts = date_facts;
+    }
 
-		this.datefacts = date_facts;
-	}
-
+    public void setUpperLevels( Map<String, String> upper_lavels){
+        this.upperLevels = upper_lavels;
+    }
 
 	public void write() throws IOException {
 		if(matches == null)
@@ -74,7 +71,6 @@ public class DatasetWriter {
 
 		String extensionRNS = "http://kr.di.uoa.gr/yago-extension/resource/";
 		String extensionONS = "http://kr.di.uoa.gr/yago-extension/ontology/";
-		String extensionYagoRNS = "http://yago-knowledge.org/resource/";
 
 		logger.info("Started reading matches and data");
 		/** store matches and data into jena models */
@@ -165,11 +161,14 @@ public class DatasetWriter {
 				}
 				else if(source.toLowerCase().equals("kapodistrias")) {
 					/** check if the predicate is part of the Kapodistrias ontology */
-					if(predLN.equals("hasKapodistrias_ID") || predLN.equals("hasKapodistrias_UpperLevel")||
-							predLN.equals("hasKapodistrias_Geometry") || predLN.equals("hasKapodistrias_Type"))	{
+					if(predLN.equals("hasKapodistrias_ID") || predLN.equals("hasKapodistrias_Type"))	{
 						newPred = ResourceFactory.createProperty(extensionONS, predLN);
 						newObj = obj;
 					}
+					else if (predLN.equals("label") ){
+                        newPred = ResourceFactory.createProperty("http://www.w3.org/2000/01/rdf-schema#", predLN);
+                        newObj = obj;
+                    }
 					else if (predLN.equals("wasCreatedOnDate")){
 						if(yagoEnt != null && datefacts != null){
 							String yago_uri = yagoEnt.toString().substring(yagoEnt.toString().lastIndexOf("/")+1, yagoEnt.toString().length());
@@ -177,7 +176,7 @@ public class DatasetWriter {
 								if(datefacts.get(yago_uri).contains("wasCreatedOnDate"))
 									continue;
 						}
-						newPred = ResourceFactory.createProperty(extensionYagoRNS, predLN);
+						newPred = ResourceFactory.createProperty(extensionONS, "OfficialCreationDate");
 						newObj = obj;
 					}
 					else if (predLN.equals("wasDestroyedOnDate")){
@@ -187,24 +186,24 @@ public class DatasetWriter {
 								if(datefacts.get(yago_uri).contains("wasDestroyedOnDate"))
 									continue;
 						}
-						newPred = ResourceFactory.createProperty(extensionYagoRNS, predLN);
+						newPred = ResourceFactory.createProperty(extensionONS, "OfficialTerminationDate");
 						newObj = obj;
 					}
-					else if (predLN.equals("label") ){
-						newPred = ResourceFactory.createProperty("http://www.w3.org/2000/01/rdf-schema#", predLN);
-						newObj = obj;
-					}
-					/*else if(predLN.equals("asWKT")) {
-						newPred = hasGeo;
-						RDFNode geom = ResourceFactory.createResource(extensionRNS + localName);
-						newObj = geom;
-						if(yagoEnt != null)
-							triplesMatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
-						else
-							triplesUnmatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
-					}*/
+					else if(predLN.equals("hasKapodistrias_UpperLevel")){
+						if (upperLevels == null)
+							continue;
+					    if (upperLevels.containsKey(obj.toString())) {
+                            newPred = ResourceFactory.createProperty(extensionONS, predLN);
+                            newObj = ResourceFactory.createResource(upperLevels.get(obj.toString()));
+                        }
+					    else{
+                            newPred = ResourceFactory.createProperty(extensionONS, predLN);
+							String obj_name = obj.toString().split("/")[dataEnt.getURI().split("/").length-1];
+                            newObj = ResourceFactory.createResource(extensionRNS+source+"entity_"+obj_name);
+                        }
+                    }
 					else if(predLN.equals("hasGeometry")) {
-						newPred = pred;
+						newPred = ResourceFactory.createProperty("http://www.opengis.net/ont/geosparql#", predLN);
 						newObj = ResourceFactory.createResource(extensionRNS+obj.asResource());
 						RDFNode wkt = modelData.listObjectsOfProperty(obj.asResource(), null).next();
 						if(yagoEnt != null)
