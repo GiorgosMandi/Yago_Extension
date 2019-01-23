@@ -107,10 +107,15 @@ public class LabelProcessing {
         return label.toUpperCase();
     }
 
+
     private static String processKapodistriasLabel(String label) {
-
         label = processYagoLabel(label);
-
+        if (label.contains("ΔΗΜΟΤΙΚΟ ΔΙΑΜΕΡΙΣΜΑ "))
+            label = label.replace("ΔΗΜΟΤΙΚΟ ΔΙΑΜΕΡΙΣΜΑ ", "");
+        if (label.contains("ΚΟΙΝΟΤΙΚΟ ΔΙΑΜΕΡΙΣΜΑ "))
+            label = label.replace("ΚΟΙΝΟΤΙΚΟ ΔΙΑΜΕΡΙΣΜΑ ", "");
+        if (label.contains("ΚΟΙΝΟΤΗΤΑ "))
+            label = label.replace("ΚΟΙΝΟΤΗΤΑ ", "");
         if (label.contains("ΔΗΜΟΣ "))
             label = label.replace("ΔΗΜΟΣ ", "");
         else if (label.contains("ΝΟΜΟΣ "))
