@@ -114,8 +114,8 @@ public class LabelProcessing {
             label = label.replace("ΔΗΜΟΤΙΚΟ ΔΙΑΜΕΡΙΣΜΑ ", "");
         if (label.contains("ΚΟΙΝΟΤΙΚΟ ΔΙΑΜΕΡΙΣΜΑ "))
             label = label.replace("ΚΟΙΝΟΤΙΚΟ ΔΙΑΜΕΡΙΣΜΑ ", "");
-        if (label.contains("ΚΟΙΝΟΤΗΤΑ "))
-            label = label.replace("ΚΟΙΝΟΤΗΤΑ ", "");
+        //if (label.contains("ΚΟΙΝΟΤΗΤΑ "))
+          //  label = label.replace("ΚΟΙΝΟΤΗΤΑ ", "");
         if (label.contains("ΔΗΜΟΣ "))
             label = label.replace("ΔΗΜΟΣ ", "");
         else if (label.contains("ΝΟΜΟΣ "))
