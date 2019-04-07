@@ -134,8 +134,8 @@ public class DatasetWriter {
 							triplesMatched.add(new Triple(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()).asNode(),
 									asWKT.asNode(), wkt.asNode()));
 						else
-							triplesMatched.add(new Triple(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()).asNode(),
-									asWKT.asNode(), wkt.asNode())); //WARNING shouldn't the list be triplesUnmatched ?
+							triplesUnmatched.add(new Triple(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()).asNode(),
+									asWKT.asNode(), wkt.asNode()));
 					}
 					else
 						continue;
@@ -143,9 +143,29 @@ public class DatasetWriter {
 				else if(source.toLowerCase().equals("kallikratis")) {
 					/** check if the predicate is part of the Kallikratis ontology */
 					if(predLN.equals("hasKallikratis_ID") || predLN.equals("hasKallikratis_Name") ||
-							predLN.equals("hasKallikratis_Population")){
+							predLN.equals("hasKallikratis_Population") || predLN.equals("officialCreationDate")){
 						newPred = ResourceFactory.createProperty(extensionONS, predLN);
 						newObj = obj;
+					}
+					else if(predLN.equals("label")){
+						newPred = ResourceFactory.createProperty("http://www.w3.org/2000/01/rdf-schema#", predLN);
+						newObj = obj;
+					}
+					else if(predLN.equals("type")){
+						newPred = ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#", predLN);
+						newObj = obj;
+					}
+					else if(predLN.equals("Kallikratis_BelongsTo")){
+						if (upperLevels == null)
+							continue;
+						if (upperLevels.containsKey(obj.toString())) {
+							newPred = ResourceFactory.createProperty(extensionONS, predLN);
+							newObj = ResourceFactory.createResource(upperLevels.get(obj.toString()));
+						}
+						else{
+							newPred = ResourceFactory.createProperty(extensionONS, predLN);
+							newObj = obj;
+						}
 					}
 					else if(predLN.equals("asWKT")) {
 						newPred = hasGeo;
@@ -198,7 +218,7 @@ public class DatasetWriter {
                         }
 					    else{
                             newPred = ResourceFactory.createProperty(extensionONS, predLN);
-							String obj_name = obj.toString().split("/")[dataEnt.getURI().split("/").length-1];
+							String obj_name = obj.toString().split("/")[obj.toString().split("/").length-1];
                             newObj = ResourceFactory.createResource(extensionRNS+source+"entity_"+obj_name);
                         }
                     }
