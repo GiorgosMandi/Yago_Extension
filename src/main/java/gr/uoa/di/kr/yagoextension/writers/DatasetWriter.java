@@ -133,16 +133,16 @@ public class DatasetWriter {
 						newObj = obj;
 					}
 					else if(predLN.equals("hasGADM_NationalLevel")) {
-            newPred = ResourceFactory.createProperty(extensionONS, predLN);
-            newObj = obj;
-            if(yagoEnt != null)
+						newPred = ResourceFactory.createProperty(extensionONS, predLN);
+						newObj = obj;
+						if(yagoEnt != null)
 							triplesMatched.add(new Triple(yagoEnt.asNode(), type.asNode(), 
 									ResourceFactory.createResource(extensionONS+"GADM_"+obj.toString()+"_AdministrativeUnit").asNode()));
 						else
 							triplesUnmatched.add(new Triple(ResourceFactory.createResource(extensionRNS+source+"entity_"+localName).asNode(), 
 									type.asNode(), ResourceFactory.createResource(extensionONS+"GADM_"+obj.toString()+"_AdministrativeUnit").asNode()));
             
-          }
+          			}
 					else if(predLN.equals("hasGADM_UpperLevelUnit")) {
 						newPred = ResourceFactory.createProperty(extensionONS, predLN);
 						newObj = obj;
@@ -176,9 +176,9 @@ public class DatasetWriter {
 						newObj = obj;
 					}
 					else if(predLN.equals("hasKallikratis_Population")) {
-            newPred = ResourceFactory.createProperty(extensionONS, predLN.replace("hasKallikratis", "hasGAG"));
-            newObj = obj;
-          }
+						newPred = ResourceFactory.createProperty(extensionONS, predLN.replace("hasKallikratis", "hasGAG"));
+						newObj = obj;
+					  }
 					else if(predLN.equals("type") && predNS.equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#")) {
 						newPred = type;
 						newObj = ResourceFactory.createResource(extensionONS+"GAG_"+obj.asResource().getLocalName());

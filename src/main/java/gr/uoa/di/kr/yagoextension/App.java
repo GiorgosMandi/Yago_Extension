@@ -54,8 +54,8 @@ public class App {
 		parseArgs(args);
 		switch (mode) {
 			case "matching":
-				break;
 				match();
+				break;
 			case "generation":
 				datasetGeneration();
 				break;
@@ -157,6 +157,24 @@ public class App {
 						origin = value;
 					else if (args[i].contains("--class"))
 						yagoClass = value;
+					else if (args[i].contains("--datefacts")) {
+						Reader datefacts_file = null;
+						if (value.contains(".ttl") || value.contains(".nt") || value.contains(".n3")){
+							datefacts_file = new RDFReader(value);
+						}else if (value.contains(".tsv")){
+							datefacts_file = new TSVReader(value);
+						}
+						datefacts = datefacts_file != null ? datefacts_file.readFacts() : null;
+					}
+					else if(args[i].contains("--upperlevel")) {
+						Reader upperLevels_file = null;
+						if (value.contains(".ttl") || value.contains(".nt") || value.contains(".n3")) {
+							upperLevels_file = new RDFReader(value);
+						} else if (value.contains(".tsv")) {
+							upperLevels_file = new TSVReader(value);
+						}
+						upperLevels = upperLevels_file != null ? upperLevels_file.readUpperLevels() : null;
+					}
 					else
 						usage();
 				}
@@ -175,36 +193,7 @@ public class App {
 			default:
 				usage();
 				System.exit(0);
-					else if(value.contains(".tsv")) {
-						datefacts_file = new TSVReader(value);
-					datefacts = datefacts_file != null ? datefacts_file.readFacts() : null;
-					}
-				}
-				else if(args[i].contains("--upperlevel")) {
-					Reader upperLevels_file = null;
-					if (value.contains(".ttl") || value.contains(".nt") || value.contains(".n3")) {
-						upperLevels_file = new RDFReader(value);
-					} else if (value.contains(".tsv")) {
-						upperLevels_file = new TSVReader(value);
-					}
-					upperLevels = upperLevels_file != null ? upperLevels_file.readUpperLevels() : null;
-				}
 		}
-		/** topology mode */
-		else if(mode.equals("topology")) {
-			for(int i = 1; i < args.length; i++) {
-				String value = args[i].split("=")[1];
-				if(args[i].contains("--kg"))
-					extendedKG = new RDFReader(value);
-				else if(args[i].contains("--output"))
-					outputTopology = value;
-			}
-		}
-		else {
-			usage();
-			System.exit(0);
-		}
-				
 	}
 
 	private static void match() {
