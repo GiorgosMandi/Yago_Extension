@@ -3,5 +3,9 @@
 .settings/
 src/test
 target/
+logs/
+.idea/
+out/
+src/main/main.iml
 
 \.idea/

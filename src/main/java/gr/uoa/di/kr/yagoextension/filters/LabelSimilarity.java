@@ -2,7 +2,7 @@ package gr.uoa.di.kr.yagoextension.filters;
 
 /**
  * This class is part of the YAGO Extension Project
- * Author: Nikos Karalis 
+ * Author: Nikos Karalis
  * kr.di.uoa.gr
  */
 
@@ -24,7 +24,7 @@ import me.tongfei.progressbar.ProgressBar;
  */
 
 public class LabelSimilarity {
-
+	
 	private double threshold = 0.82;
 	private int nThreads;
 	private MatchesStructure matches;
@@ -41,14 +41,12 @@ public class LabelSimilarity {
 		this.matches = new LabelMatchesStructure();
 		this.strSimilarity = method;
 		pb = new ProgressBar("LabelSimilarity", yago.size());
-		/** pre-processing of labels for the official datasets */
+		/* pre-processing of labels for the official datasets */
 		preprocess = origin;
 	}
 
 	public MatchesStructure run() throws InterruptedException {
-		/**
-		 * Initialize threads and split the list of yago entities in nThreads parts  
-		 */
+		/* Initialize threads and split the list of yago entities in nThreads parts */
 		int yagoSize = yago.size();
 		ExecutorService exec = Executors.newFixedThreadPool(nThreads);
 		int minItemsPerThread = yagoSize / nThreads;
@@ -73,9 +71,9 @@ public class LabelSimilarity {
 		return matches;
 	}
 	private void filter(List<Entity> yagoPart) {
-		/**
-		 * Input: Sublist of yago list
-		 * Output: Matches produced by the label similarity filter
+		/*
+		  Input: Sublist of yago list
+		  Output: Matches produced by the label similarity filter
 		 */
 		double similarity;
 		for(Entity yagoEnt : yagoPart) {
@@ -84,9 +82,9 @@ public class LabelSimilarity {
 				String dsKey = dsEnt.getID();
 				for(String yagoLabel : yagoEnt.getLabels()) {
 					for(String dsLabel : dsEnt.getLabels()) {
-						double lowerCaseSim = StringSimilarity.similarity(yagoLabel, dsLabel, strSimilarity);
+						double def = StringSimilarity.similarity(yagoLabel, dsLabel, strSimilarity);
 						double upperCaseSim = StringSimilarity.similarity(yagoLabel.toUpperCase(), dsLabel.toUpperCase(), strSimilarity);
-						similarity = (upperCaseSim > lowerCaseSim) ? upperCaseSim : lowerCaseSim;
+						similarity = (upperCaseSim > def) ? upperCaseSim : def;
 						if(preprocess != null) {
 							String ylProc = LabelProcessing.processYagoLabel(yagoLabel);
 							String dlProc = LabelProcessing.processDataSourceLabel(dsLabel, preprocess);
@@ -106,9 +104,6 @@ public class LabelSimilarity {
 				pb.step(); // add step to the progress bar
 			}
 		}
-	}
-	private static double levenshteinRatio(int dist, int len) {
-		return 1-((double)dist/len);
 	}
 
 }

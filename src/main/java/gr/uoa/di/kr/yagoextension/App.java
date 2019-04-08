@@ -9,6 +9,7 @@ package gr.uoa.di.kr.yagoextension;
 import java.util.List;
 import java.util.Map;
 
+import gr.uoa.di.kr.yagoextension.util.Evaluation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import gr.uoa.di.kr.yagoextension.filters.GeometryDistance;
@@ -35,25 +36,33 @@ public class App {
 	private static String outputUnmatched;
 	private static String matchesFile;
 	private static String origin;
-	private static Map<String, List<String>> datefacts=null;
+	private static String yagoClass = null;
 	private static Map<String, String> upperLevels=null;
+	private static Map<String, List<String>> datefacts=null;
 	private static int threads = 1;
+	private static int eval = 0;
 	private static String preprocess = null;
+	private static String strSimMethod = "jarowinkler";
 	private static String blacklist = null;
 	private static Reader extendedKG;
 	private static String outputTopology;
-	final static Logger logger = LogManager.getLogger(App.class);
-
+	private final static Logger logger = LogManager.getRootLogger();
+	
 	public static void main( String[] args ) {
-
+		
 		org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.OFF); // suppress Jena's log4j WARN messages
 		parseArgs(args);
-		if(mode.equals("matching"))
-			match();
-		else if(mode.equals("generation"))
-			datasetGeneration();
-		else if(mode.equals("topology"))
-			generateTopologicalRelations();
+		switch (mode) {
+			case "matching":
+				break;
+				match();
+			case "generation":
+				datasetGeneration();
+				break;
+			case "topology":
+				generateTopologicalRelations();
+				break;
+		}
 
 	}
 
@@ -89,74 +98,87 @@ public class App {
 			usage();
 		mode = args[0];
 		/** matching mode */
-		if(mode.equals("matching")) {
-			if (args.length < 4)
-				usage();
-			for(int i = 1; i < args.length; i++) {
-				/** yago */
-				String value = args[i].split("=")[1];
-				if(args[i].contains("--yago")) {
-					if(value.contains(".ttl") || value.contains(".nt") || value.contains(".n3")){
-						yago = new RDFReader(value);
-					}
-					else if(value.contains(".tsv")) {
-						yago = new TSVReader(value);
-					}
-					else
-						usage();
-				}
-				/** gadm, osm, etc. */
-				else if(args[i].contains("--datasource")) {
-					if(value.contains(".ttl") || value.contains(".nt") || value.contains(".n3")){
-						datasource = new RDFReader(value);
-					}
-					else if(value.contains(".tsv")) {
-						datasource = new TSVReader(value);
-					}
-					// TO-DO shapefiles
-					else
-						usage();
-				}
-				/** output */
-				else if(args[i].contains("--output"))
-					outputMatches = value;
-				/** threads */
-				else if(args[i].contains("--threads"))
-					threads = Integer.parseInt(value);
-				/** preprocess */
-				else if(args[i].contains("--preprocess"))
-					preprocess = value;
-				else if(args[i].contains("--blacklist"))
-					blacklist = value;
-				else
+		switch(mode) {
+			case "matching":
+				if (args.length < 4)
 					usage();
-			}
-		}
-		/** generation mode */
-		else if(mode.equals("generation")) {
-			if (args.length < 5)
-				usage();
-			for(int i = 1; i < args.length; i++) {
-				String value = args[i].split("=")[1];
-				if(args[i].contains("--matches"))
-					matchesFile = value;
-				else if(args[i].contains("--matched"))
-					outputMatched = value;
-				else if(args[i].contains("--unmatched"))
-					outputUnmatched = value;
-				else if(args[i].contains("--data"))
-					data = value;
-				else if(args[i].contains("--origin"))
-					origin = value;
-				else if(args[i].contains("--datefacts")){
-					Reader datefacts_file=null;
-					if(value.contains(".ttl") || value.contains(".nt") || value.contains(".n3")){
-						datefacts_file = new RDFReader(value);
+				for (int i = 1; i < args.length; i++) {
+					/** yago */
+					String value = args[i].split("=")[1];
+					if (args[i].contains("--yago")) {
+						if (value.contains(".ttl") || value.contains(".nt") || value.contains(".n3")) {
+							yago = new RDFReader(value);
+						} else if (value.contains(".tsv")) {
+							yago = new TSVReader(value);
+						} else
+							usage();
 					}
+					/** gadm, osm, etc. */
+					else if (args[i].contains("--datasource")) {
+						if (value.contains(".ttl") || value.contains(".nt") || value.contains(".n3")) {
+							datasource = new RDFReader(value);
+						} else if (value.contains(".tsv")) {
+							datasource = new TSVReader(value);
+						}
+						// TO-DO shapefiles
+						else
+							usage();
+					}
+					else if (args[i].contains("--output"))
+						outputMatches = value;
+					else if (args[i].contains("--threads"))
+						threads = Integer.parseInt(value);
+					else if (args[i].contains("--preprocess"))
+						preprocess = value;
+					else if (args[i].contains("--blacklist"))
+						blacklist = value;
+					else if (args[i].contains("--similarity"))
+						strSimMethod = value;
+					else if (args[i].contains("--eval"))
+						eval = Integer.parseInt(value);
+					else
+						usage();
+				}
+				break;
+			case "generation":
+				if (args.length < 5)
+					usage();
+				for (int i = 1; i < args.length; i++) {
+					String value = args[i].split("=")[1];
+					if (args[i].contains("--matches"))
+						matchesFile = value;
+					else if (args[i].contains("--matched"))
+						outputMatched = value;
+					else if (args[i].contains("--unmatched"))
+						outputUnmatched = value;
+					else if (args[i].contains("--data"))
+						data = value;
+					else if (args[i].contains("--origin"))
+						origin = value;
+					else if (args[i].contains("--class"))
+						yagoClass = value;
+					else
+						usage();
+				}
+				break;
+			case "topology":
+				for (int i = 1; i < args.length; i++) {
+					String value = args[i].split("=")[1];
+					if (args[i].contains("--kg"))
+						extendedKG = new RDFReader(value);
+					else if (args[i].contains("--output"))
+						outputTopology = value;
+					else if (args[i].contains("--threads"))
+						threads = Integer.parseInt(value);
+				}
+				break;
+			default:
+				usage();
+				System.exit(0);
 					else if(value.contains(".tsv")) {
 						datefacts_file = new TSVReader(value);
-					}
 					datefacts = datefacts_file != null ? datefacts_file.readFacts() : null;
+					}
 				}
 				else if(args[i].contains("--upperlevel")) {
 					Reader upperLevels_file = null;
@@ -167,9 +189,6 @@ public class App {
 					}
 					upperLevels = upperLevels_file != null ? upperLevels_file.readUpperLevels() : null;
 				}
-				else
-					usage();
-			}
 		}
 		/** topology mode */
 		else if(mode.equals("topology")) {
@@ -185,7 +204,7 @@ public class App {
 			usage();
 			System.exit(0);
 		}
-
+				
 	}
 
 	private static void match() {
@@ -199,15 +218,26 @@ public class App {
 			Map<String, Entity> yagoEntities = yago.getEntities();
 			Map<String, Entity> dsEntities = datasource.getEntities();
 			logger.info("Finished reading data");
-			/** remove entities that are already matched */
+			/* remove entities that are already matched */
 			if(blacklist != null)
 				Blacklist.removeMatchedEntities(yagoEntities, dsEntities, blacklist);
 			logger.info("Number of Yago Entities: "+yagoEntities.size());
 			logger.info("Number of Datasource Entities: "+dsEntities.size());
 			if(preprocess.equals("kapodistrias"))
 				Blacklist.removeMergedEntities(yagoEntities);
+			switch(strSimMethod) {
+				case "jarowinkler" :
+					logger.info("Using JaroWinkler similarity");
+					break;
+				case "substring" :
+					logger.info("Using SubString similarity");
+					break;
+				default:
+					logger.info("Using Levenshtein Similarity");
+					break;
+			}
 			LabelSimilarity ls = new LabelSimilarity(
-					new ArrayList<Entity>(yagoEntities.values()), new ArrayList<Entity>(dsEntities.values()), threads, preprocess, "jarowinkler");
+					new ArrayList<Entity>(yagoEntities.values()), new ArrayList<Entity>(dsEntities.values()), threads, preprocess, strSimMethod);
 			MatchesStructure labelMatches = ls.run();
 			logger.info("Finished Label Similarity Filter");
 			logger.info("Number of Label Similarity Matches: "+labelMatches.size());
@@ -216,7 +246,14 @@ public class App {
 			logger.info("Number of Matches: "+geomMatches.size());
 			MatchesWriter matchesWriter = new MatchesWriter(outputMatches, geomMatches);
 			matchesWriter.write();
-
+			if(eval > 0) {
+				String evalOut = outputMatches.replace(".nt", "_eval.txt");
+				logger.info("Generating a random subset of the matches for evaluation");
+				Evaluation.generate(geomMatches, eval, yagoEntities, dsEntities,
+					evalOut, strSimMethod, preprocess);
+				logger.info("Evaluation file: "+evalOut);
+			}
+			
 		} catch (InterruptedException | FileNotFoundException | UnsupportedEncodingException e) {
 			e.printStackTrace();
 			System.exit(2);
@@ -226,13 +263,11 @@ public class App {
 	private static void datasetGeneration() {
 
 		logger.info("Generating new Knowledge Graphs");
-		DatasetWriter ds;
-		ds = new DatasetWriter(outputMatched, outputUnmatched, matchesFile, data, origin);
+		DatasetWriter ds = new DatasetWriter(outputMatched, outputUnmatched, matchesFile, data, origin, yagoClass);
 		if (datefacts != null)
 			ds.setDatefacts(datefacts);
 		if(upperLevels != null)
 			ds.setUpperLevels(upperLevels);
-
 		try {
 			ds.write();
 		} catch (IOException e) {
@@ -249,10 +284,11 @@ public class App {
 		extendedKG.read();
 		logger.info("Generating Topological Relations");
 		Map<String, Entity> extEntities = extendedKG.getEntities();
-		TopologicalRelationsWriter topoWriter = new TopologicalRelationsWriter(extEntities, outputTopology);
+		TopologicalRelationsWriter topoWriter =
+			new TopologicalRelationsWriter(new ArrayList<Entity>(extEntities.values()), outputTopology, threads);
 		try {
 			topoWriter.write();
-		} catch (FileNotFoundException e) {
+		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 			System.exit(2);
 		}
