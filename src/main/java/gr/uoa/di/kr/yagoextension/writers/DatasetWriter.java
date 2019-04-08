@@ -195,12 +195,13 @@ public class DatasetWriter {
 						if (upperLevels == null)
 							continue;
 						if (upperLevels.containsKey(obj.toString())) {
-							newPred = ResourceFactory.createProperty(extensionONS, predLN);
+							newPred = ResourceFactory.createProperty(extensionONS,  predLN.replace("Kallikratis", "hasGAG"));
 							newObj = ResourceFactory.createResource(upperLevels.get(obj.toString()));
 						}
 						else{
-							newPred = ResourceFactory.createProperty(extensionONS, predLN);
-							newObj = obj;
+							String obj_localName = obj.asResource().getURI().split("/")[dataEnt.getURI().split("/").length-1];
+							newPred = ResourceFactory.createProperty(extensionONS,  predLN.replace("Kallikratis", "hasGAG"));
+							newObj = ResourceFactory.createResource(extensionRNS+"gagentity_"+obj_localName);
 						}
 					}
 					else if(predLN.equals("asWKT")) {
@@ -349,9 +350,9 @@ public class DatasetWriter {
 						newObj = obj;
 					}
 					else if(predLN.equals("hasOS_Description")) {
-            newPred = type;
-            newObj = ResourceFactory.createResource(extensionONS+"OS_"+obj.toString().replace(" ", ""));
-          }
+						newPred = type;
+						newObj = ResourceFactory.createResource(extensionONS+"OS_"+obj.toString().replace(" ", ""));
+					}
 					else if(predLN.equals("asWKT") && predNS.equals("http://www.opengis.net/ont/geosparql#")) {
 						newPred = hasGeo;
 						/** keep the id for the geometry */
@@ -377,9 +378,9 @@ public class DatasetWriter {
 						newObj = obj;
 					}
 					else if(predLN.equals("hasOSNI_Area") || predLN.equals("hasOSNI_AreaSqKM") || predLN.equals("hasOSNI_Perimeter")) {
-            newPred = ResourceFactory.createProperty(extensionONS, predLN);
-            newObj = obj;
-          }
+						newPred = ResourceFactory.createProperty(extensionONS, predLN);
+						newObj = obj;
+					}
 					else if(predLN.equals("hasOSNI_Class")) {
 						newPred = type;
 						newObj = ResourceFactory.createResource(extensionONS+"OSNI_"+obj.asLiteral().getString().replace(" ", ""));
