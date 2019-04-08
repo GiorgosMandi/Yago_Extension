@@ -15,7 +15,16 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.*;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.rdf.model.impl.ModelCom;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,6 +42,8 @@ public class DatasetWriter {
 	private MatchesStructure matches;
 	private String source;
 	private String yagoClass = null;
+	private static Model triplesMatched;
+	private static Model triplesUnmatched;
 	final static Logger logger = LogManager.getRootLogger();
 
 	private Map<String, List<String>> datefacts = null;
@@ -80,9 +91,9 @@ public class DatasetWriter {
 		Model modelMatches = RDFDataMgr.loadModel(matchesFile);
 		Model modelData = RDFDataMgr.loadModel(data);
 		logger.info("Finished reading matches and data");
-
-		List<Triple> triplesMatched = new ArrayList<Triple>();
-		List<Triple> triplesUnmatched = new ArrayList<Triple>();
+		
+		triplesMatched = ModelFactory.createDefaultModel();
+		triplesUnmatched = ModelFactory.createDefaultModel();
 		StmtIterator dataIter;
 
 		/** open files */
@@ -133,14 +144,14 @@ public class DatasetWriter {
 						newObj = obj;
 					}
 					else if(predLN.equals("hasGADM_NationalLevel")) {
-						newPred = ResourceFactory.createProperty(extensionONS, predLN);
-						newObj = obj;
-						if(yagoEnt != null)
-							triplesMatched.add(new Triple(yagoEnt.asNode(), type.asNode(), 
-									ResourceFactory.createResource(extensionONS+"GADM_"+obj.toString()+"_AdministrativeUnit").asNode()));
+            newPred = ResourceFactory.createProperty(extensionONS, predLN);
+            newObj = obj;
+            if(yagoEnt != null)
+							triplesMatched.add(yagoEnt.asResource(), type, 
+									ResourceFactory.createResource(extensionONS+"GADM_"+obj.toString()+"_AdministrativeUnit"));
 						else
-							triplesUnmatched.add(new Triple(ResourceFactory.createResource(extensionRNS+source+"entity_"+localName).asNode(), 
-									type.asNode(), ResourceFactory.createResource(extensionONS+"GADM_"+obj.toString()+"_AdministrativeUnit").asNode()));
+							triplesUnmatched.add(ResourceFactory.createResource(extensionRNS+source+"entity_"+localName), 
+									type, ResourceFactory.createResource(extensionONS+"GADM_"+obj.toString()+"_AdministrativeUnit"));
             
           			}
 					else if(predLN.equals("hasGADM_UpperLevelUnit")) {
@@ -156,11 +167,11 @@ public class DatasetWriter {
 						newObj = ResourceFactory.createResource(extensionRNS+obj.asResource().getLocalName().replaceAll("Geometry_", "Geometry_gadm_"));
 						RDFNode wkt = modelData.listObjectsOfProperty(obj.asResource(), null).next();
 						if(yagoEnt != null)
-							triplesMatched.add(new Triple(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()).asNode(),
-									asWKT.asNode(), wkt.asNode()));
+							triplesMatched.add(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()), 
+									asWKT, wkt);
 						else
-							triplesUnmatched.add(new Triple(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()).asNode(), 
-									asWKT.asNode(), wkt.asNode()));
+							triplesUnmatched.add(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()), 
+									asWKT, wkt);
 					}
 					else
 						continue;
@@ -206,12 +217,12 @@ public class DatasetWriter {
 					}
 					else if(predLN.equals("asWKT")) {
 						newPred = hasGeo;
-						RDFNode geom = ResourceFactory.createResource(extensionRNS+"Geometry_gag_"+localName);
+						Resource geom = ResourceFactory.createResource(extensionRNS+"Geometry_gag_"+localName);
 						newObj = geom;
 						if(yagoEnt != null)
-							triplesMatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
+							triplesMatched.add(geom, asWKT, obj);
 						else
-							triplesUnmatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
+							triplesUnmatched.add(geom, asWKT, obj);
 					}
 					else
 						continue;
@@ -282,12 +293,12 @@ public class DatasetWriter {
 					}
 					else if(predLN.equals("asWKT") && predNS.equals("http://www.opengis.net/ont/geosparql#")) {
 						newPred = hasGeo;
-						RDFNode geom = ResourceFactory.createResource(extensionRNS+"Geometry_osm_"+localName.split("_")[localName.split("_").length-1]);
+						Resource geom = ResourceFactory.createResource(extensionRNS+"Geometry_osm_"+localName.split("_")[localName.split("_").length-1]);
 						newObj = geom;
 						if(yagoEnt != null)
-							triplesMatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
+							triplesMatched.add(geom, asWKT, obj);
 						else
-							triplesUnmatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
+							triplesUnmatched.add(geom, asWKT, obj);
 					}
 					else
 						continue;
@@ -328,12 +339,12 @@ public class DatasetWriter {
 					}
 					else if(predLN.equals("asWKT") && predNS.equals("http://www.opengis.net/ont/geosparql#")) {
 						newPred = hasGeo;
-						RDFNode geom = ResourceFactory.createResource(extensionRNS+"Geometry_osm_"+localName.split("_")[localName.split("_").length-1]);
+						Resource geom = ResourceFactory.createResource(extensionRNS+"Geometry_osm_"+localName.split("_")[localName.split("_").length-1]);
 						newObj = geom;
 						if(yagoEnt != null)
-							triplesMatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
+							triplesMatched.add(geom, asWKT, obj);
 						else
-							triplesUnmatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
+							triplesUnmatched.add(geom, asWKT, obj);
 					}
 					else
 						continue;
@@ -356,12 +367,12 @@ public class DatasetWriter {
 					else if(predLN.equals("asWKT") && predNS.equals("http://www.opengis.net/ont/geosparql#")) {
 						newPred = hasGeo;
 						/** keep the id for the geometry */
-						RDFNode geom = ResourceFactory.createResource(extensionRNS+"Geometry_OS_"+localName.split("_")[localName.split("_").length-1]);
+						Resource geom = ResourceFactory.createResource(extensionRNS+"Geometry_OS_"+localName.split("_")[localName.split("_").length-1]);
 						newObj = geom;
 						if(yagoEnt != null)
-							triplesMatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
+							triplesMatched.add(geom, asWKT, obj);
 						else
-							triplesUnmatched.add(new Triple(geom.asNode(), asWKT.asNode(), obj.asNode()));
+							triplesUnmatched.add(geom, asWKT, obj);
 					}
 					else
 						continue;
@@ -390,9 +401,9 @@ public class DatasetWriter {
 						newObj = ResourceFactory.createResource(extensionRNS+obj.asResource().getLocalName().replace("Geometry_", "Geometry_osni_"));
 						RDFNode wkt = modelData.listObjectsOfProperty(obj.asResource(), asWKT).next();
 						if(yagoEnt != null)
-							triplesMatched.add(new Triple(newObj.asNode(), asWKT.asNode(), wkt.asNode()));
+							triplesMatched.add(newObj.asResource(), asWKT, wkt);
 						else
-							triplesUnmatched.add(new Triple(newObj.asNode(), asWKT.asNode(), wkt.asNode()));
+							triplesUnmatched.add(newObj.asResource(), asWKT, wkt);
 					}
 					else
 						continue;
@@ -407,10 +418,10 @@ public class DatasetWriter {
 						Property hasID = ResourceFactory.createProperty(extensionONS, "hasOSI_ID");
 						RDFNode osiID = ResourceFactory.createStringLiteral(dataEnt.getLocalName());
 						if(yagoEnt != null)
-							triplesMatched.add(new Triple(yagoEnt.asNode(), hasID.asNode(), osiID.asNode()));
+							triplesMatched.add(yagoEnt.asResource(), hasID, osiID);
 						else
-							triplesUnmatched.add(new Triple(ResourceFactory.createResource(extensionRNS+source+"entity_"+dataEnt.getLocalName()).asNode(),
-									hasID.asNode(), osiID.asNode()));
+							triplesUnmatched.add(ResourceFactory.createResource(extensionRNS+source+"entity_"+dataEnt.getLocalName()), 
+									hasID, osiID);
 					}
 					else if(predLN.equals("label") && predNS.equals("http://www.w3.org/2000/01/rdf-schema#")) {
 						newPred = ResourceFactory.createProperty(extensionONS, "hasOSI_Name");
@@ -423,9 +434,9 @@ public class DatasetWriter {
 						newObj = ResourceFactory.createResource(extensionRNS+"Geometry_osi_"+osiID);
 						RDFNode wkt = modelData.listObjectsOfProperty(obj.asResource(), asWKT).next();
 						if(yagoEnt != null)
-							triplesMatched.add(new Triple(newObj.asNode(), asWKT.asNode(), wkt.asNode()));
+							triplesMatched.add(newObj.asResource(), asWKT, wkt);
 						else
-							triplesUnmatched.add(new Triple(newObj.asNode(), asWKT.asNode(), wkt.asNode()));
+							triplesUnmatched.add(newObj.asResource(), asWKT, wkt);
 					}
 					else
 						continue;
@@ -433,23 +444,29 @@ public class DatasetWriter {
 
 				/** add triple to the corresponding list */
 				if(yagoEnt != null)
-					triplesMatched.add(new Triple(yagoEnt.asNode(), newPred.asNode(), newObj.asNode()));
+					triplesMatched.add(yagoEnt.asResource(), newPred, newObj);
 				else
-					triplesUnmatched.add(new Triple(ResourceFactory.createResource(extensionRNS+source+"entity_"+localName).asNode(),
-							newPred.asNode(), newObj.asNode()));
+					triplesUnmatched.add(ResourceFactory.createResource(extensionRNS+source+"entity_"+localName), 
+							newPred, newObj);
 
 			}
 			/** if the class of yago is provided, then make an unmatched entity instance of the provided class */
 			if(yagoEnt == null && yagoClass != null)
-				triplesUnmatched.add(new Triple(ResourceFactory.createResource(extensionRNS+source+"entity_"+localName).asNode(),
-					type.asNode(), ResourceFactory.createResource(yagoNS+yagoClass).asNode()));
+				triplesUnmatched.add(ResourceFactory.createResource(extensionRNS+source+"entity_"+localName),
+					type, ResourceFactory.createResource(yagoNS+yagoClass));
 		}
 
 		/** write knowledge graphs to files */
 		logger.info("Writing to files");
-		RDFDataMgr.writeTriples(outMatched, triplesMatched.iterator());
-		RDFDataMgr.writeTriples(outUnmatched, triplesUnmatched.iterator());
-
+//		RDFDataMgr.writeTriples(outMatched, triplesMatched.iterator());
+//		RDFDataMgr.writeTriples(outUnmatched, triplesUnmatched.iterator());
+//		ModelCom mc = new ModelCom(null);
+//		List<Statement> stmtsMatched = mc.asStatements(triplesMatched);
+//		List<Statement> stmtsUnmatched = mc.asStatements(triplesUnmatched);
+		triplesMatched.write(outMatched, "ttl");
+		triplesUnmatched.write(outUnmatched, "ttl");
+		
+		
 		outMatched.close();
 		outUnmatched.close();
 	}
