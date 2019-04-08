@@ -194,24 +194,16 @@ public class DatasetWriter {
 						newPred = type;
 						newObj = ResourceFactory.createResource(extensionONS+"GAG_"+obj.asResource().getLocalName());
 					}
-					else if(predLN.equals("label")){
-						newPred = ResourceFactory.createProperty("http://www.w3.org/2000/01/rdf-schema#", predLN);
-						newObj = obj;
-					}
-					else if(predLN.equals("type")){
-						newPred = ResourceFactory.createProperty("http://www.w3.org/1999/02/22-rdf-syntax-ns#", predLN);
-						newObj = obj;
-					}
 					else if(predLN.equals("Kallikratis_BelongsTo")){
 						if (upperLevels == null)
 							continue;
 						if (upperLevels.containsKey(obj.toString())) {
-							newPred = ResourceFactory.createProperty(extensionONS,  predLN.replace("Kallikratis", "hasGAG"));
+							newPred = ResourceFactory.createProperty(extensionONS,  predLN.replace("Kallikratis", "GAG"));
 							newObj = ResourceFactory.createResource(upperLevels.get(obj.toString()));
 						}
 						else{
 							String obj_localName = obj.asResource().getURI().split("/")[dataEnt.getURI().split("/").length-1];
-							newPred = ResourceFactory.createProperty(extensionONS,  predLN.replace("Kallikratis", "hasGAG"));
+							newPred = ResourceFactory.createProperty(extensionONS,  predLN.replace("Kallikratis", "GAG"));
 							newObj = ResourceFactory.createResource(extensionRNS+"gagentity_"+obj_localName);
 						}
 					}
@@ -244,7 +236,7 @@ public class DatasetWriter {
 								if(datefacts.get(yago_uri).contains("wasCreatedOnDate"))
 									continue;
 						}
-						newPred = ResourceFactory.createProperty(extensionONS, "OfficialCreationDate");
+						newPred = ResourceFactory.createProperty(extensionONS, "οfficialCreationDate");
 						newObj = obj;
 					}
 					else if (predLN.equals("wasDestroyedOnDate")){
@@ -254,7 +246,7 @@ public class DatasetWriter {
 								if(datefacts.get(yago_uri).contains("wasDestroyedOnDate"))
 									continue;
 						}
-						newPred = ResourceFactory.createProperty(extensionONS, "OfficialTerminationDate");
+						newPred = ResourceFactory.createProperty(extensionONS, "οfficialTerminationDate");
 						newObj = obj;
 					}
 					else if(predLN.equals("hasKapodistrias_UpperLevel")){
@@ -275,11 +267,11 @@ public class DatasetWriter {
 						newObj = ResourceFactory.createResource(extensionRNS+obj.asResource());
 						RDFNode wkt = modelData.listObjectsOfProperty(obj.asResource(), null).next();
 						if(yagoEnt != null)
-							triplesMatched.add(new Triple(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()).asNode(),
-									asWKT.asNode(), wkt.asNode()));
+							triplesMatched.add(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()),
+									asWKT, wkt);
 						else
-							triplesUnmatched.add(new Triple(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()).asNode(),
-									asWKT.asNode(), wkt.asNode()));
+							triplesUnmatched.add(ResourceFactory.createResource(extensionRNS+newObj.asResource().getLocalName()),
+									asWKT, wkt);
 					}
 					else
 						continue;
